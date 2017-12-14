@@ -28,8 +28,8 @@ public class NaiveBitmapIndex<T extends AbstractSQLValue> extends AbstractBitmap
 	public NaiveBitmapIndex(AbstractTable table, int keyColumnNumber) {
 		super(table, keyColumnNumber);
 		this.bitMaps = new HashMap<T, BitSet>();
-		this.bulkLoadIndex();
 		this.bitmapSize = this.getTable().getRecordCount();
+		this.bulkLoadIndex();
 	}
 	
 	@SuppressWarnings("unchecked")
