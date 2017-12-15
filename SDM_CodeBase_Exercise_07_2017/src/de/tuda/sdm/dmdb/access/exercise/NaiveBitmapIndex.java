@@ -40,12 +40,14 @@ public class NaiveBitmapIndex<T extends AbstractSQLValue> extends AbstractBitmap
 		Iterator<AbstractRecord> it = this.getTable().iterator();
 		while(it.hasNext()){
 			bitMaps.put((T) it.next().getValue(keyColumnNumber), new BitSet(bitmapSize));
+			//it = (Iterator<AbstractRecord>) it.next();
 		}
 		it = this.getTable().iterator();
 		int i = 0;
 		while(it.hasNext()){
 			bitMaps.get(it.next().getValue(keyColumnNumber)).set(i);
 			i++;
+			//it = (Iterator<AbstractRecord>) it.next();
 		}
 }
 
@@ -53,10 +55,13 @@ public class NaiveBitmapIndex<T extends AbstractSQLValue> extends AbstractBitmap
 	public List<AbstractRecord> rangeLookup(T startKey, T endKey) {
 		Iterator<AbstractRecord> it = this.getTable().iterator();
 		List<AbstractRecord> result = new ArrayList<AbstractRecord>();
+		
 		while(it.hasNext()){
-			if(it.next().getValue(keyColumnNumber).compareTo(startKey)>=0 && it.next().getValue(keyColumnNumber).compareTo(endKey)<=0){
-				result.add(it.next());
+			AbstractRecord ar= it.next();
+			if(ar.getValue(keyColumnNumber).compareTo(startKey)>=0 && ar.getValue(keyColumnNumber).compareTo(endKey)<=0){
+				result.add(ar);
 			}
+			//it = (Iterator<AbstractRecord>) it.next();
 		}
 		return result;
 	}
