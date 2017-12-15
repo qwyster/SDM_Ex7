@@ -53,15 +53,21 @@ public class NaiveBitmapIndex<T extends AbstractSQLValue> extends AbstractBitmap
 
 	@Override
 	public List<AbstractRecord> rangeLookup(T startKey, T endKey) {
-		Iterator<AbstractRecord> it = this.getTable().iterator();
+		//Iterator<T> it = this.getTable().iterator();
+		BitSet bitset = new BitSet(bitmapSize);
+		bitset.set(0, bitmapSize);
 		List<AbstractRecord> result = new ArrayList<AbstractRecord>();
-		
-		while(it.hasNext()){
-			AbstractRecord ar= it.next();
-			if(ar.getValue(keyColumnNumber).compareTo(startKey)>=0 && ar.getValue(keyColumnNumber).compareTo(endKey)<=0){
+		for(HashMap.Entry<T,BitSet> entry : bitMaps.entrySet()){
+			T key = entry.getKey();
+			if(key.compareTo(startKey)>=0 && key.compareTo(endKey)<=0){
+				bitset.and(entry.getValue());
+			}
+		}
+		for(int i= 0; i<bitmapSize; i++){
+			if(bitset.get(i)){
+				AbstractRecord ar = this.getTable().getRecordFromRowId(i);
 				result.add(ar);
 			}
-			//it = (Iterator<AbstractRecord>) it.next();
 		}
 		return result;
 	}
