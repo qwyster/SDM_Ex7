@@ -3,6 +3,7 @@ package de.tuda.sdm.dmdb.access.exercise;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import de.tuda.sdm.dmdb.access.AbstractBitmapIndex;
 import de.tuda.sdm.dmdb.access.AbstractTable;
 import de.tuda.sdm.dmdb.storage.AbstractRecord;
 import de.tuda.sdm.dmdb.storage.types.AbstractSQLValue;
+import de.tuda.sdm.dmdb.storage.types.exercise.SQLInteger;
 
 /**
  * Bitmap index that uses the vanilla/naive bitmap approach (one bitmap for each distinct value)
@@ -35,14 +37,28 @@ public class NaiveBitmapIndex<T extends AbstractSQLValue> extends AbstractBitmap
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void bulkLoadIndex() {
-		// TODO implement this method	
-	}
+		Iterator<AbstractRecord> it = this.getTable().iterator();
+		while(it.hasNext()){
+			bitMaps.put((T) it.next().getValue(keyColumnNumber), new BitSet(bitmapSize));
+		}
+		it = this.getTable().iterator();
+		int i = 0;
+		while(it.hasNext()){
+			bitMaps.get(it.next().getValue(keyColumnNumber)).set(i);
+			i++;
+		}
+}
 
 	@Override
 	public List<AbstractRecord> rangeLookup(T startKey, T endKey) {
-		// TODO implement this method
-
-		return null;
+		Iterator<AbstractRecord> it = this.getTable().iterator();
+		List<AbstractRecord> result = new ArrayList<AbstractRecord>();
+		while(it.hasNext()){
+			if(it.next().getValue(keyColumnNumber).compareTo(startKey)>=0 && it.next().getValue(keyColumnNumber).compareTo(endKey)<=0){
+				result.add(it.next());
+			}
+		}
+		return result;
 	}
 
 }
