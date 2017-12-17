@@ -50,7 +50,7 @@ public class NaiveBitmapIndex<T extends AbstractSQLValue> extends AbstractBitmap
 			bitMaps.put(key, new BitSet(bitmapSize));
 		}
 		it = this.getTable().iterator();
-		int i = 1; // bitset indexed from 1
+		int i = 0; 
 		while (it.hasNext()) {
 			bitMaps.get(it.next().getValue(keyColumnNumber)).set(i);
 			i++;
@@ -78,9 +78,9 @@ public class NaiveBitmapIndex<T extends AbstractSQLValue> extends AbstractBitmap
 			}
 		}
 
-		for (int i = 1; i <= bitmapSize; i++) {
+		for (int i = 0; i < bitmapSize; i++) {
 			if (bitset.get(i)==true) {
-				AbstractRecord ar = this.getTable().getRecordFromRowId(i-1);
+				AbstractRecord ar = this.getTable().getRecordFromRowId(i);
 				result.add(ar);
 			}
 		}

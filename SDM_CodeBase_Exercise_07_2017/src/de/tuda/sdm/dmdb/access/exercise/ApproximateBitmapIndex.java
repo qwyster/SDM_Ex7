@@ -52,9 +52,9 @@ public class ApproximateBitmapIndex<T extends AbstractSQLValue> extends Abstract
 			bitMaps.put(key, new BitSet(bitmapSize));
 		}
 		it = this.getTable().iterator();
-		int i = 0; // bitset indexed from 1
+		int i = 0; 
 		while (it.hasNext()) {
-			bitMaps.get(it.next().getValue(keyColumnNumber)).set((i % bitmapSize) + 1);
+			bitMaps.get(it.next().getValue(keyColumnNumber)).set(i % bitmapSize);
 			i++;
 		}
 	}
@@ -71,17 +71,28 @@ public class ApproximateBitmapIndex<T extends AbstractSQLValue> extends Abstract
 		}
 		
 		HashSet<Integer> setBitIndexes = new HashSet<Integer>(); // set containing all set bits
-		for (int i = 1; i <= bitmapSize; i++) {
+		for (int i = 0; i < bitmapSize; i++) {
 			if (bitset.get(i) == true) {
-				setBitIndexes.add(i-1);
+				setBitIndexes.add(i);
 			}
 		}
 		
 		int tableSize = this.getTable().getRecordCount();
 		List<AbstractRecord> result = new ArrayList<AbstractRecord>();
-		for (int j = 0; j < tableSize; ++j) {
-			if (setBitIndexes.contains(j % bitmapSize)) {
-				AbstractRecord ar = this.getTable().getRecordFromRowId(j);
+//		for (int j = 0; j < tableSize; ++j) {
+//			if (setBitIndexes.contains(j % bitmapSize)) {
+//				AbstractRecord ar = this.getTable().getRecordFromRowId(j);
+//				T key = (T) ar.getValue(keyColumnNumber);
+//				if (key.compareTo(startKey) >= 0 && key.compareTo(endKey) <= 0) { // avoid false positives
+//					result.add(ar);
+//				}
+//			}
+//		}
+		
+		
+		for (Integer i : setBitIndexes) {
+			for (int j = 0; j < Math.floor(tableSize/bitmapSize); ++j) {
+				AbstractRecord ar = this.getTable().getRecordFromRowId(i + j*bitmapSize);
 				T key = (T) ar.getValue(keyColumnNumber);
 				if (key.compareTo(startKey) >= 0 && key.compareTo(endKey) <= 0) { // avoid false positives
 					result.add(ar);
