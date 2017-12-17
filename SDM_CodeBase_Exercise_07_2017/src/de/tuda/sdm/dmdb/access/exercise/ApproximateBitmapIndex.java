@@ -2,10 +2,13 @@ package de.tuda.sdm.dmdb.access.exercise;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 
 import de.tuda.sdm.dmdb.access.AbstractBitmapIndex;
 import de.tuda.sdm.dmdb.access.AbstractTable;
@@ -52,10 +55,17 @@ public class ApproximateBitmapIndex<T extends AbstractSQLValue> extends Abstract
 			bitMaps.put(key, new BitSet(bitmapSize));
 		}
 		it = this.getTable().iterator();
-		int i = 0; 
+		int i = 0;
 		while (it.hasNext()) {
 			bitMaps.get(it.next().getValue(keyColumnNumber)).set(i % bitmapSize);
 			i++;
+		}
+	}
+	
+	class AbstractRecordComparator implements Comparator<AbstractRecord> {
+		@Override
+		public int compare(AbstractRecord arg0, AbstractRecord arg1) {
+			return arg0.getValue(keyColumnNumber).compareTo(arg1.getValue(keyColumnNumber));
 		}
 	}
 
@@ -69,36 +79,26 @@ public class ApproximateBitmapIndex<T extends AbstractSQLValue> extends Abstract
 				bitset.or(entry.getValue()); // OR
 			}
 		}
-		
+
 		HashSet<Integer> setBitIndexes = new HashSet<Integer>(); // set containing all set bits
 		for (int i = 0; i < bitmapSize; i++) {
 			if (bitset.get(i) == true) {
 				setBitIndexes.add(i);
 			}
 		}
-		
+
 		int tableSize = this.getTable().getRecordCount();
 		List<AbstractRecord> result = new ArrayList<AbstractRecord>();
-//		for (int j = 0; j < tableSize; ++j) {
-//			if (setBitIndexes.contains(j % bitmapSize)) {
-//				AbstractRecord ar = this.getTable().getRecordFromRowId(j);
-//				T key = (T) ar.getValue(keyColumnNumber);
-//				if (key.compareTo(startKey) >= 0 && key.compareTo(endKey) <= 0) { // avoid false positives
-//					result.add(ar);
-//				}
-//			}
-//		}
-		
-		
 		for (Integer i : setBitIndexes) {
-			for (int j = 0; j < Math.floor(tableSize/bitmapSize); ++j) {
-				AbstractRecord ar = this.getTable().getRecordFromRowId(i + j*bitmapSize);
+			for (int j = 0; j < Math.floor(tableSize / bitmapSize); ++j) {
+				AbstractRecord ar = this.getTable().getRecordFromRowId(i + j * bitmapSize);
 				T key = (T) ar.getValue(keyColumnNumber);
 				if (key.compareTo(startKey) >= 0 && key.compareTo(endKey) <= 0) { // avoid false positives
 					result.add(ar);
 				}
 			}
 		}
+		Collections.sort(result, new AbstractRecordComparator()); // sort by rowId
 		return result;
 	}
 
